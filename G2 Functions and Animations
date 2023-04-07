@@ -1,0 +1,311 @@
+
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.animation as animation
+import imageio
+import os
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.colors import LinearSegmentedColormap
+import random
+
+def shift_array(arr):
+    last_element = arr[-1]
+    new_arr = [last_element]
+    for i in range(len(arr)-1):
+        new_arr.append(arr[i])
+    return new_arr
+
+'''
+================================
+this graphs and animates the g2 function for a random signal
+================================
+'''
+
+
+y1 = np.random.rand(400)
+y2 = np.zeros(400)
+for i in range(0,400):
+    
+
+    x1 = np.linspace(0, 200, 400)
+    
+    if i == 0:
+        y_shift = y1
+    else:
+        y_shift = shift_array(y_shift)
+        
+    
+    top_term = [y_shift[j]* y1[j] for j in range(len(y1))]
+    y2[i] = (sum(top_term)/len(y1))/((sum(y1)/len(y1))*(sum(y_shift)/len(y_shift)))
+    for j in range(len(y2)):
+        if y2[j] == 0:
+            y2[j] = None
+    
+    # Create figure and axes with titles
+    fig, axs = plt.subplot_mosaic("AB;CB", gridspec_kw={'width_ratios': [1, 1.2], 'height_ratios': [1, 1]}, figsize = (10,5))
+    fig.suptitle('Normalized Autocorrelation', fontsize=16)
+    
+    axs['A'].set_title('$\\tau$ = 0', fontsize=14)
+    axs['A'].plot(x1, y1, color='blue')
+    axs['A'].set_xlabel('Time (s)', fontsize=12)
+    axs['A'].set_ylabel('Signal Intensity', fontsize=12)
+    
+    axs['B'].set_title('Second Order Correlation Function', fontsize=14)
+    axs['B'].plot(x1, y2, color='orange')
+    axs['B'].set_xlabel('$\\tau$', fontsize=12)
+    axs['B'].set_ylabel('$g^2(\\tau)$', fontsize=12)
+    axs['B'].set_ylim([0,1.5])
+    
+    axs['C'].set_title('Changing $\\tau$', fontsize=14)
+    axs['C'].plot(x1, y1, color='blue')
+    axs['C'].plot(x1, y_shift, color='orange')
+    axs['C'].set_xlabel('Time (s)', fontsize=12)
+    axs['C'].set_ylabel('Signal Intensity', fontsize=12)
+    
+    fig.tight_layout()
+    plt.savefig("C://Users//colbu//OneDrive//Desktop//Figures//g2images//"+ f'{i}')
+    print(i)
+    plt.pause(.01)
+
+plt.show()
+
+
+
+image_folder = r"C:\Users\colbu\OneDrive\Desktop\Figures\g2images"  
+output_folder = r"C:\Users\colbu\OneDrive\Desktop\Figures\G2_gifs"  
+
+fps = 10  
+
+images = []
+for filename in sorted(os.listdir(image_folder), key=lambda x: int(os.path.splitext(x)[0])):
+    if filename.endswith('.png'):
+  
+        images.append(imageio.imread(os.path.join(image_folder, filename)))
+
+
+output_file = os.path.join(output_folder, 'output.gif')
+imageio.mimsave(output_file, images, fps=fps)
+
+
+
+#%%
+'''
+=====================
+same thing but for a sin signal
+=====================
+'''
+
+
+x1 = np.linspace(0, 50, 400)
+y1 = np.sin(x1)+1
+y3 = .5*np.sin(x1)+1
+y5 = np.zeros(400)
+y6 = np.zeros(400)
+for i in range(400):
+    
+    y2 = np.sin(x1-.5*i*(np.pi/4)-np.pi)+1
+    y4 = .5*np.sin(x1-.5*i*(np.pi/4)-np.pi)+1
+
+    top_term1 = [y1[j]* y2[j] for j in range(len(y1))]
+    y5[i] = (sum(top_term1)/len(y1))/((sum(y1)/len(y1))*(sum(y2)/len(y1)))
+    
+    for j in range(len(y2)):
+        if y5[j] == 0:
+            y5[j] = None
+            
+    top_term2 = [y3[j]* y4[j] for j in range(len(y3))]
+    y6[i] = (sum(top_term2)/len(y4))/((sum(y3)/len(y3))*(sum(y4)/len(y4)))
+    
+    for j in range(len(y2)):
+        if y6[j] == 0:
+            y6[j] = None
+ 
+    fig, axs = plt.subplot_mosaic("AB;CD", gridspec_kw={'width_ratios': [1, 1.2], 'height_ratios': [1, 1]}, figsize = (10,5))
+    fig.suptitle('Normalized Autocorrelation', fontsize=16)
+    
+    axs['A'].set_title('$\\tau$ = 0', fontsize=14)
+    axs['A'].plot(x1, y1, color='blue')
+    axs['A'].plot(x1, y2, color='orange')
+    axs['A'].set_xlabel('Time (s)', fontsize=12)
+    axs['A'].set_ylabel('Signal Intensity', fontsize=12)
+    axs['A'].set_ylim([0,2])
+    
+    axs['B'].set_title('Second Order Correlation Function', fontsize=14)
+    axs['B'].plot(x1, y5, color='orange')
+    axs['B'].set_xlabel('$\\tau$', fontsize=12)
+    axs['B'].set_ylabel('$g^2(\\tau)$', fontsize=12)
+    axs['B'].set_ylim([.4,2.1])
+    
+    axs['C'].set_title('Changing $\\tau$', fontsize=14)
+    axs['C'].plot(x1, y3, color='blue')
+    axs['C'].plot(x1, y4, color='orange')
+    axs['C'].set_xlabel('Time (s)', fontsize=12)
+    axs['C'].set_ylabel('Signal Intensity', fontsize=12)
+    axs['C'].set_ylim([0,2])
+    
+    axs['D'].set_title('Changing $\\tau$', fontsize=14)
+    axs['D'].set_ylim([.4,2.1])
+    axs['D'].plot(x1, y6, color='orange')
+    axs['D'].set_xlabel('Time (s)', fontsize=12)
+    axs['D'].set_ylabel('Signal Intensity', fontsize=12)
+    
+    fig.tight_layout()
+    plt.savefig("C://Users//colbu//OneDrive//Desktop//Figures//g2images//"+ f'{i}')
+    plt.pause(.01)
+
+plt.show()
+
+
+image_folder = r"C:\Users\colbu\OneDrive\Desktop\Figures\g2images"  
+output_folder = r"C:\Users\colbu\OneDrive\Desktop\Figures\G2_gifs"  
+
+fps = 5 
+
+images = []
+for filename in sorted(os.listdir(image_folder), key=lambda x: int(os.path.splitext(x)[0])):
+    if filename.endswith('.png'): 
+        images.append(imageio.imread(os.path.join(image_folder, filename)))
+
+output_file = os.path.join(output_folder, 'output.gif')
+imageio.mimsave(output_file, images, fps=fps)
+
+#%%
+'''
+=====================
+This creates a 3d plot of g2 as a function of stage pos and tau for a perfectly coherent beam
+=====================
+'''
+
+colors = ['#081d58', '#253494', '#225ea8', '#1d91c0', '#41b6c4', '#7fcdbb', '#c7e9b4', '#edf8b1']
+cmap = LinearSegmentedColormap.from_list('Blue', colors, N=256)
+
+fig = plt.figure(figsize=(12, 10))
+ax = fig.add_subplot(111, projection='3d')
+
+x = np.arange(0, 13, 0.2)
+y = np.arange(-5, .6*np.pi, 0.2)
+
+X, Y = np.meshgrid(x, y)
+Z = .75*np.sin(.25*5**Y-np.pi/2)*np.cos(X)+1.25
+
+
+surf = ax.plot_surface(X, Y, Z, cmap=cmap, vmin=0, vmax=2, shade=False)
+
+
+ax.set_xlabel(r'$\delta_i$', labelpad=20, fontsize=18)
+ax.set_ylabel(r'$\log(\tau)$', labelpad=20, fontsize=18)
+ax.set_zlabel(r'$g^2(\tau)$', labelpad=20, fontsize=18)
+
+
+ax.set_title(r'$g^2(\tau)$ as function of stage position and delay time', pad=30, fontsize=20)
+
+
+ax.view_init(elev=40, azim=-130)
+
+
+surf.set_facecolor((0,0,0,0))
+surf.set_edgecolor('k')
+surf.set_linewidth(0.1)
+
+plt.show()
+
+#%%
+
+
+'''
+================================
+this graphs and animates the g2 function for a random signal
+================================
+'''
+
+
+
+
+size = 400
+y1 = [0] * size
+rev_y1 = [0] * size
+for i in range(0,400, 2):
+  
+    index = random.randint(i, 2/2+i)
+    y1[index] = 1
+
+for i in range(0,400):
+    if y1[i] == 1:
+        a  = random.randint(0,1)
+        if a == 1:
+            rev_y1[i] = 1
+            y1[i] = 0
+
+print(sum(y1))
+print(sum(rev_y1))
+
+y2 = [x if x == 1 else None for x in y1]
+rev_y2 = [x if x == 1 else None for x in rev_y1]
+print(y2)
+print(rev_y2)
+y3 = np.zeros(400)
+for i in range(50):
+    
+
+    x1 = np.linspace(0, 200, 400)
+    
+    if i == 0:
+        y_shift = rev_y2
+        y_shift_noNone = rev_y1
+    else:
+        y_shift = shift_array(y_shift)
+        y_shift_noNone = shift_array(y_shift_noNone)
+    
+    
+    top_term = [y_shift_noNone[i]* y1[i] for i in range(len(y1))]
+    y3[i] = (sum(top_term)/len(y1))/((sum(y1)/len(y1))*(sum(y_shift_noNone)/len(y_shift_noNone)))
+    
+    
+    # Create figure and axes with titles
+    fig, axs = plt.subplot_mosaic("AB;CB", gridspec_kw={'width_ratios': [1, 1.2], 'height_ratios': [1, 1]}, figsize = (10,5))
+    fig.suptitle('Normalized Autocorrelation', fontsize=16)
+    
+    axs['A'].set_title('$\\tau$ = 0', fontsize=14)
+    axs['A'].scatter(x1, y2, color='blue', s = 4)
+    axs['A'].scatter(x1, rev_y2, color='orange', s = 4)
+    axs['A'].set_xlabel('Time (s)', fontsize=12)
+    axs['A'].set_ylabel('Signal Intensity', fontsize=12)
+    axs['A'].set_xlim([0,20])
+    
+    axs['B'].set_title('Second Order Correlation Function', fontsize=14)
+    axs['B'].plot(x1, y3, color='orange')
+    axs['B'].set_xlabel('$\\tau$', fontsize=12)
+    axs['B'].set_ylabel('$g^2(\\tau)$', fontsize=12)
+    axs['B'].set_xlim([0,25])
+    
+    axs['C'].set_title('Changing $\\tau$', fontsize=14)
+    axs['C'].scatter(x1, y2, color='blue', s =4)
+    axs['C'].scatter(x1, y_shift, color='orange', s = 4)
+    axs['C'].set_xlabel('Time (s)', fontsize=12)
+    axs['C'].set_ylabel('Signal Intensity', fontsize=12)
+    axs['C'].set_xlim([0,20])
+    
+    fig.tight_layout()
+    plt.savefig("C://Users//colbu//OneDrive//Desktop//Figures//g2images//"+ f'{i}')
+    plt.pause(.01)
+
+plt.show()
+
+
+
+image_folder = r"C:\Users\colbu\OneDrive\Desktop\Figures\g2images"  
+output_folder = r"C:\Users\colbu\OneDrive\Desktop\Figures\G2_gifs"  
+
+fps = 5  
+
+images = []
+for filename in sorted(os.listdir(image_folder), key=lambda x: int(os.path.splitext(x)[0])):
+    if filename.endswith('.png'):
+  
+        images.append(imageio.imread(os.path.join(image_folder, filename)))
+
+
+output_file = os.path.join(output_folder, 'output.gif')
+imageio.mimsave(output_file, images, fps=fps)
+
+
